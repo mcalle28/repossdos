@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 
 using namespace std;
@@ -6,7 +7,7 @@ class macrobloque
 {
   public:
   int x,y;
-  vector<int>arr;
+  vector<int> arr;
   macrobloque(){}
   macrobloque(vector<int>arr,int x, int y){
     this->arr=arr;
@@ -17,11 +18,12 @@ class macrobloque
   int comparar(macrobloque MB){
       int contadorCoincidencias=0;
       for(int i=0; i<this->arr.size();i++){
-          if(this->arr!=MB.arr){
+          if(this->arr[i]!=MB.arr[i]){
               contadorCoincidencias++;
           }
-      }    
-      return contadorCoincidencias;  
+      } 
+      return contadorCoincidencias;
   }
 
+ 
 };
