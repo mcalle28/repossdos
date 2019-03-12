@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <iostream>
 #include "macrobloque.cpp"
 #include "vector4.cpp"
 
@@ -18,21 +19,22 @@ class compresor
   }
 
     void compresionMPEG2(){
+        vector4 v4;
         for(int i=0;i<this->MBArr1.size();i++){
             int valMin=256;
-            vector4 vector;
-            for(int j=0;i<this->MBArr2.size();j++){
+            for(int j=0;j<this->MBArr2.size();j++){
                 int comparacion = this->MBArr1[i].comparar(this->MBArr2[j]);
                 if(comparacion==0){
-                    vector=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
+                    v4=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
+                    break;
                 }
                 else if(comparacion<=valMin){
                     valMin=comparacion;
-                    vector=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
+                    v4=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
                 }
 
             }
-            vector.imprimir();      
+            v4.imprimir();      
         }
     }
 };
