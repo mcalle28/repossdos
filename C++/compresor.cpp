@@ -20,18 +20,18 @@ class compresor
   }
 
     void compresionMPEG2(){
-        for(int i=0;i<this->MBArr1.size();i++){
+        for(int i=0;i<MBArr1.size();i++){
             int valMin=256;
             vector4 vector;
-            for(int j=0;j<this->MBArr2.size();j++){
-                int comparacion = this->MBArr1[i].comparar(this->MBArr2[j]);
+            for(int j=0;j<MBArr2.size();j++){
+                int comparacion = MBArr1[i].comparar(MBArr2[j]);
                 if(comparacion==0){
-                    vector=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
+                    vector=vector4(MBArr1[i].x, MBArr1[i].y, MBArr2[j].x, MBArr2[j].y);
                     break;
                 }
                 else if(comparacion<=valMin){
                     valMin=comparacion;
-                    vector=vector4(this->MBArr1[i].x, this->MBArr1[i].y, this->MBArr2[j].x, this->MBArr2[j].y);
+                    vector=vector4(MBArr1[i].x, MBArr1[i].y, MBArr2[j].x, MBArr2[j].y);
                 }
 
             }

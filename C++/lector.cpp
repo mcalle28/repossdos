@@ -1,102 +1,93 @@
 #pragma once
 #include <iostream>
 #include <sstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string>
 #include <vector>
 #include <queue>
 #include "macrobloque.cpp"
-#include <string>
+#define HEADER_SIZE 54
 
 using namespace std;
+
+typedef struct
+{
+    unsigned char signature[2];
+    unsigned int width;
+    unsigned int height;
+    unsigned short int bpp;
+    unsigned int padding;
+    unsigned char **pixels;
+} BMP;
+
+BMP read_bmp(char *file_name);
 
 class lector
 {
   private:
-    char* frame1;
-    char* frame2;
+    char *frame1;
+    char *frame2;
     int w;
     int h;
 
   public:
-    lector(){
-
+    lector()
+    {
     }
 
-    lector(char* frame1, char* frame2)
+    lector(char *frame1, char *frame2)
     {
         this->frame1 = frame1;
         this->frame2 = frame2;
     }
 
-    vector<vector<int> > llenarMatrizPixeles(char *filename){
+    vector<vector<int>> llenarMatrizPixeles(char *filename)
+    {
+        BMP frame1bmp = read_bmp(filename);
+        this->w = frame1bmp.width;
+        this->h = frame1bmp.height;
 
-        int c;
-        FILE *f = fopen(filename, "rb");
-        unsigned char info[54];
-        fread(info, sizeof(unsigned char), 54, f); 
+        vector<vector<int>> matrizPixeles = vector<vector<int>>();
 
-        int width = *(int *)&info[18];
-        int height = *(int *)&info[22];
+        queue<int> matrizDoble;
 
-        this->w = width;
-        this->h = height;
-
-        int size = 3 * width * height;
-        unsigned char *data = new unsigned char[size]; 
-        fread(data, sizeof(unsigned char), size, f);   
-        fclose(f);
-
-        queue<int> pixeles;
-        for (c = 0; c < size; c += 3)
+        for (int i = w - 1; i >= 0; --i)
         {
-            stringstream ss;
-            ss << int(data[c]);
-            ss<< int(data[c + 1]);
-            ss<< int(data[c + 2]);
-            string p;
-            ss >> p;
-            int x= stoi(p);
-            pixeles.push(x);
-        }
-        vector<vector<int> > matrizPixeles = vector<vector<int> >(width);
-        for (int i = 0; i < width; i++)
-        {
-            vector<int> columna = vector<int>(height);
-            matrizPixeles.push_back(columna);
-            for (int j = 0; j < height; j++)
+            for (int j = 0; j < h; ++j)
             {
-                matrizPixeles[i].push_back(pixeles.front());
-                pixeles.pop(); 
+                matrizDoble.push((int)frame1bmp.pixels[i][j]);
             }
         }
+
+        for (int i = 0; i < w; i++)
+        {
+            vector<int> columna = vector<int>();
+            matrizPixeles.push_back(columna);
+            for (int j = 0; j < h; j++)
+            {
+                matrizPixeles[i].push_back(matrizDoble.front());
+                matrizDoble.pop();
+            }
+        }
+
+        free(frame1bmp.pixels);
         return matrizPixeles;
     }
 
-    vector<macrobloque> crearArregloMB16x16(vector<vector<int> > pixelMatrix, int w, int h){
+    vector<macrobloque> crearArregloMB16x16(vector<vector<int>> pixelMatrix, int w, int h)
+    {
         vector<macrobloque> arrMB;
-        int xsatan=0;
-        for (int x = 0; x < w; x += 16){
-            for (int y = 0; y < h; y += 16){
+        for (int x = 0; x < w; x += 16)
+        {
+            for (int y = 0; y < h; y += 16)
+            {
                 vector<int> pixelesMB;
-                for (int i = x; i < x + 16; ++i){
-                    for (int j = y; j < y + 16; ++j){
-                        pixelesMB.push_back(pixelMatrix[i][j]);
-                    }
-                }
-                //cout<<pixelesMB.size()<<x<<y<<endl;
-                macrobloque MB = macrobloque(pixelesMB, x, y);
-                arrMB.push_back(MB);
-            }
-        } 
-        return arrMB;
-    }
-
-    vector<macrobloque> crearArregloMBpxp(vector<vector<int> > pixelMatrix, int w, int h){
-        vector<macrobloque> arrMB;
-        for (int x = 0; x < w-15; ++x){
-            for (int y = 0; y<h-15; ++y){
-                vector<int> pixelesMB;
-                for (int i = x; i < x + 16; ++i){
-                    for (int j = y; j < y + 16; ++j){
+                for (int i = x; i < x + 15; ++i)
+                {
+                    for (int j = y; j < y + 15; ++j)
+                    {
                         pixelesMB.push_back(pixelMatrix[i][j]);
                     }
                 }
@@ -107,19 +98,115 @@ class lector
         return arrMB;
     }
 
-    vector<vector<macrobloque> > leer(){
-        vector<vector<int> > matrizPixel1 = llenarMatrizPixeles(this->frame1);
-        vector<vector<int> > matrizPixel2 = llenarMatrizPixeles(this->frame2);
+    vector<macrobloque> crearArregloMBpxp(vector<vector<int>> pixelMatrix, int w, int h)
+    {
+        vector<macrobloque> arrMB;
+        for (int x = 0; x < w - 15; ++x)
+        {
+            for (int y = 0; y < h - 15; ++y)
+            {
+                vector<int> pixelesMB;
+                for (int i = x; i < x + 15; ++i)
+                {
+                    for (int j = y; j < y + 15; ++j)
+                    {
+                        pixelesMB.push_back(pixelMatrix[i][j]);
+                    }
+                }
+                macrobloque MB = macrobloque(pixelesMB, y, x);
+                arrMB.push_back(MB);
+            }
+        }
+        return arrMB;
+    }
+
+    vector<vector<macrobloque>> leer()
+    {
+        vector<vector<int>> matrizPixel1 = llenarMatrizPixeles(this->frame1);
+        vector<vector<int>> matrizPixel2 = llenarMatrizPixeles(this->frame2);
 
         vector<macrobloque> ArrMB1 = crearArregloMB16x16(matrizPixel1, w, h);
-        vector<macrobloque> ArrMB2 = crearArregloMBpxp(matrizPixel2, w, h);
 
-        vector<vector<macrobloque> > 
-        datos;
+        vector<macrobloque> ArrMB2 = crearArregloMBpxp(matrizPixel2, w, h);
+        vector<vector<macrobloque>> datos;
 
         datos.push_back(ArrMB1);
         datos.push_back(ArrMB2);
 
         return datos;
+    }
+
+    BMP read_bmp(char *file_name)
+    {
+        BMP bmp_frame;
+        FILE *bmp_file;
+        unsigned char bmp_header[HEADER_SIZE]; 
+        unsigned int matrix_addr;              
+
+        
+        bmp_file = fopen(file_name, "r");
+
+        if (bmp_file != NULL)
+        {
+
+            if (fread((void *)bmp_header, sizeof(unsigned char),
+                      HEADER_SIZE, bmp_file) != HEADER_SIZE)
+            {
+                fprintf(stderr, "Error leyendo el archivo file %s", file_name);
+                exit(EXIT_FAILURE);
+            }
+
+            bmp_frame.signature[0] = bmp_header[0];
+            bmp_frame.signature[1] = bmp_header[1];
+
+            if (bmp_frame.signature[0] != 'B' || bmp_frame.signature[1] != 'M')
+            {
+                fprintf(stderr, "Formato incorrecto: %s", file_name);
+                exit(EXIT_FAILURE);
+            }
+
+            bmp_frame.width = *(int *)&bmp_header[18];
+            bmp_frame.height = fabs(*(int *)&bmp_header[22]);
+
+            bmp_frame.bpp = *(short *)&bmp_header[28];
+
+            bmp_frame.padding = 0;
+            bmp_frame.padding = (bmp_frame.width * 3) % 4;
+            bmp_frame.width += bmp_frame.padding;
+
+            matrix_addr = *(int *)&bmp_header[10];
+
+            bmp_frame.pixels = (unsigned char **)malloc((size_t)bmp_frame.height * sizeof(unsigned char **));
+
+            if (bmp_frame.pixels == NULL)
+            {
+                fprintf(stderr, "Error al ingresar los pixeles en el archivo: %s", file_name);
+                exit(EXIT_FAILURE);
+            }
+
+            for (int row = 0; row < bmp_frame.height; ++row)
+            {
+                bmp_frame.pixels[row] =
+                    (unsigned char *)malloc((size_t)bmp_frame.width);
+            }
+
+            fseek(bmp_file, matrix_addr - HEADER_SIZE, SEEK_CUR);
+
+            for (int row = 0; row < bmp_frame.height; ++row)
+            {
+                if (fread((void *)bmp_frame.pixels[row], sizeof(unsigned char),
+                          (size_t)bmp_frame.width, bmp_file) != bmp_frame.width)
+                {
+                    fprintf(stderr, "Error al ler los pixeles en el archivo: %s",
+                            file_name);
+                    exit(EXIT_FAILURE);
+                }
+            }
+        }
+        else
+            perror("Error  leyendo archivo BMP");
+
+        fclose(bmp_file);
+        return bmp_frame;
     }
 };

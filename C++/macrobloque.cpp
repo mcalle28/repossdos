@@ -17,13 +17,11 @@ class macrobloque
 
   int comparar(macrobloque MB){
       int contadorCoincidencias=0;
-      for(int i=0; i<this->arr.size();i++){
-          if(this->arr[i]!=MB.arr[i]){
+      for(int i=0; i<arr.size();i++){
+          if(arr[i]!=MB.arr[i]){
               contadorCoincidencias++;
           }
       } 
       return contadorCoincidencias;
   }
-
- 
 };
