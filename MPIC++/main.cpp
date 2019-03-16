@@ -11,7 +11,7 @@ int main(int argc, char* argv[]){
     lector l = lector(argv[1],argv[2]);
     vector<vector<macrobloque> > datos=l.leer();
     compresor c= compresor(datos[0],datos[1]);
-    c.compresionMPEG2();
+    c.compresionMPEG2(argc, argv);
 
     return 0;
 }

@@ -22,7 +22,7 @@ class compresor
       this->MBArr2=MBArr2;
   }
 
-    void compresionMPEG2(){
+    void compresionMPEG2(int argc, char* argv[]){
 
         
         int numMB = MBArr1.size();
